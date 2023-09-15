@@ -4,7 +4,7 @@ greeting:
 math:
 	expr 2 + 2
 
-all: directories downloads freshdata
+all: directories downloads freshdata filecheck
 
 directories:
 	-mkdir tmp
@@ -43,3 +43,12 @@ droughtmap:
 	npx mapshaper -i ./tmp/us_states.json ./tmp/drought.json combine-files \
 	-proj albersusa +PR \
 	-o format=svg ./data/droughtmap.svg
+
+filecheck:
+		curl "https://s3.amazonaws.com/media.johnkeefe.net/class-modules/inflation.csv" -o tmp/previous.csv
+
+		cmp --silent ./tmp/previous.csv ./data/inflation.csv || \
+		curl -X POST -H 'Content-type: application/json' \
+		--insecure \
+		--data '{"text":"The file you asked me to watch has changed!"}' $$SLACK_WEBHOOK
+
